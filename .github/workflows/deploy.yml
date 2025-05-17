@@ -55,6 +55,8 @@ jobs:
       - name: Build Svelte app
         run: |
           source $EMSDK/emsdk_env.sh
+          emsdk activate latest
+          emcc --version
           pnpm build
         shell: bash
 
