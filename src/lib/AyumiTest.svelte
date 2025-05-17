@@ -6,10 +6,12 @@
 		if (!audioContext) {
 			audioContext = new AudioContext();
 
-			const response = await fetch('/ayumi.wasm');
+			const wasmUrl = import.meta.env.BASE_URL + 'ayumi.wasm';
+			const response = await fetch(wasmUrl);
 			const wasmBuffer = await response.arrayBuffer();
 
-			await audioContext.audioWorklet.addModule('/ayumi-processor.js');
+			const processorUrl = import.meta.env.BASE_URL + 'ayumi-processor.js';
+			await audioContext.audioWorklet.addModule(processorUrl);
 
 			processorNode = new AudioWorkletNode(audioContext, 'ayumi-processor', {
 				outputChannelCount: [2]
