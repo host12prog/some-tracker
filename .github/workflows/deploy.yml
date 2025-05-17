@@ -53,7 +53,10 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build Svelte app
-        run: pnpm build
+        run: |
+          source $EMSDK/emsdk_env.sh
+          pnpm build
+        shell: bash
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
