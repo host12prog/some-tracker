@@ -62,8 +62,8 @@ jobs:
           emcc --version
           # Make build-wasm.sh executable
           chmod +x build-wasm.sh
-          # Run build with environment variables
-          EMSDK=$EMSDK pnpm build
+          # Run build with environment variables and bash
+          EMSDK=$EMSDK bash -c 'pnpm build'
         shell: bash
 
       - name: Setup Pages
