@@ -60,10 +60,8 @@ jobs:
           export EMSDK_NODE=$EMSDK_NODE
           which emcc
           emcc --version
-          # Make environment variables available to subshells
-          export -p > .env
           # Run build with environment variables
-          env $(cat .env | xargs) pnpm build
+          EMSDK=$EMSDK EMSDK_NODE=$EMSDK_NODE PATH=$PATH pnpm build
         shell: bash
 
       - name: Setup Pages
