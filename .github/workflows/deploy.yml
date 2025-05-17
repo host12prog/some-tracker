@@ -52,11 +52,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Install Emscripten SDK
+        run: |
+          source $EMSDK/emsdk_env.sh
+          emsdk install latest
+          emsdk activate latest
+          emcc --version
+        shell: bash
+
       - name: Build Svelte app
         run: |
           source $EMSDK/emsdk_env.sh
-          emsdk activate latest
-          emcc --version
           pnpm build
         shell: bash
 
