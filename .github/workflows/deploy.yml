@@ -52,17 +52,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Setup Emscripten Environment
-        run: |
-          source $EMSDK/emsdk_env.sh
-          echo "EMSDK=$EMSDK" >> $GITHUB_ENV
-          echo "PATH=$PATH" >> $GITHUB_ENV
-          emcc --version
-
       - name: Build Svelte app
         run: |
           source $EMSDK/emsdk_env.sh
           export PATH=$EMSDK/upstream/emscripten:$PATH
+          export EMSDK=$EMSDK
+          export EMSDK_NODE=$EMSDK_NODE
+          which emcc
+          emcc --version
           pnpm build
         shell: bash
 
