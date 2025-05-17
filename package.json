@@ -4,14 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "build:wasm": "sh build-wasm.sh",
+    "dev": "pnpm build:wasm && vite",
+    "build": "pnpm build:wasm && vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tsconfig/svelte": "^5.0.4",
+    "emscripten": "^3.1.45",
     "svelte": "^5.28.1",
     "svelte-check": "^4.1.6",
     "typescript": "~5.8.3",

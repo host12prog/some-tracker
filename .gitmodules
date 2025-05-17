@@ -1,0 +1,3 @@
+[submodule "external/ayumi"]
+	path = external/ayumi
+	url = https://github.com/true-grue/ayumi.git

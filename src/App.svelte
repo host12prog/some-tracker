@@ -1,9 +1,9 @@
 <script lang="ts">
-	import CanvasTest from './lib/CanvasTest.svelte';
+	import AyumiTest from './lib/AyumiTest.svelte';
 </script>
 
 <main>
-	<CanvasTest />
+	<AyumiTest />
 </main>
 
 <style>
