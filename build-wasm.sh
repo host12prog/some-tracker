@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Source Emscripten environment if EMSDK is set
+if [ -n "$EMSDK" ]; then
+    source "$EMSDK/emsdk_env.sh"
+fi
+
 if ! command -v emcc &> /dev/null; then
     echo "Error: emcc not found. Please install Emscripten first."
     exit 1

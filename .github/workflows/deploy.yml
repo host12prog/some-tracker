@@ -60,8 +60,10 @@ jobs:
           export EMSDK_NODE=$EMSDK_NODE
           which emcc
           emcc --version
+          # Make build-wasm.sh executable
+          chmod +x build-wasm.sh
           # Run build with environment variables
-          EMSDK=$EMSDK EMSDK_NODE=$EMSDK_NODE PATH=$PATH pnpm build
+          EMSDK=$EMSDK pnpm build
         shell: bash
 
       - name: Setup Pages
