@@ -54,24 +54,3 @@
 	<button onclick={playSound}>Play</button>
 	<button onclick={stopSound}>Stop Sound</button>
 </div>
-
-<style>
-	button {
-		padding: 10px 20px;
-		font-size: 16px;
-		cursor: pointer;
-		background-color: #4caf50;
-		color: white;
-		border: none;
-		border-radius: 4px;
-	}
-
-	button:hover {
-		background-color: #45a049;
-	}
-
-	div {
-		display: flex;
-		gap: 10px;
-	}
-</style>

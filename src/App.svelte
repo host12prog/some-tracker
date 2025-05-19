@@ -1,21 +1,32 @@
 <script lang="ts">
-	import AyumiTest from './lib/AyumiTest.svelte';
+	import { Song } from './lib/models/song';
+	import MenuBar from './lib/components/Menu/MenuBar.svelte';
+	import './app.css';
+	import { menuItems } from './lib/config/app-menu';
+
+	let song = $state(new Song());
 </script>
 
-<main>
-	<AyumiTest />
+<main class="flex h-screen flex-col bg-neutral-800 font-sans text-xs text-neutral-100">
+	<MenuBar {menuItems} />
+	<div class="p-3">
+		<div class="ml-0 max-w-fit rounded bg-neutral-700 p-3 shadow-md">
+			<div class="flex items-center gap-3">
+				<div class="flex items-center gap-1">
+					<span>Title:</span>
+					<input
+						type="text"
+						bind:value={song.title}
+						class="w-70 rounded border border-neutral-600 bg-neutral-900 px-2 py-1 focus:border-transparent focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+				</div>
+				<div class="flex items-center gap-1">
+					<span>Author:</span>
+					<input
+						type="text"
+						bind:value={song.author}
+						class="w-70 rounded border border-neutral-600 bg-neutral-900 px-2 py-1 focus:border-transparent focus:ring-1 focus:ring-blue-500 focus:outline-none" />
+				</div>
+			</div>
+		</div>
+	</div>
 </main>
-
-<style>
-	main {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100vw;
-		height: 100vh;
-		background-color: #1a1a1a;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-</style>

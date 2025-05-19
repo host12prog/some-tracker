@@ -4,9 +4,6 @@
 		"a11y-no-static-element-interactions": "ignore",
 		"a11y-no-noninteractive-tabindex": "ignore"
 	},
-	"[svelte]": {
-		"editor.defaultFormatter": "svelte.svelte-vscode"
-	},
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"svelte.enable-ts-plugin": true,
 	"editor.formatOnSave": true,

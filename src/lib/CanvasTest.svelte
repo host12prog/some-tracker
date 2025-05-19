@@ -42,20 +42,6 @@
 	});
 </script>
 
-<div class="canvas-container">
+<div>
 	<canvas bind:this={canvas} width={500} height={300}></canvas>
 </div>
-
-<style>
-	.canvas-container {
-		margin: 1rem 0;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		overflow: hidden;
-	}
-
-	canvas {
-		display: block;
-		background: #f5f5f5;
-	}
-</style>
