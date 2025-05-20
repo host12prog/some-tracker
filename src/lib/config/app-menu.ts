@@ -8,9 +8,9 @@ export const menuItems: MenuItem[] = [
 				label: 'New',
 				type: 'expandable',
 				items: [
-					{ label: 'Project', type: 'normal' },
-					{ label: 'File', type: 'normal' },
-					{ label: 'Folder', type: 'normal' },
+					{ label: 'Project', type: 'normal', icon: '📁' },
+					{ label: 'File', type: 'normal', icon: '📁' },
+					{ label: 'Folder', type: 'normal', icon: '📂' },
 					{
 						label: 'Special',
 						type: 'expandable',

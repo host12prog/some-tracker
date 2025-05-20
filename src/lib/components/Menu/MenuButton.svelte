@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
 	import MenuPanel from './MenuPanel.svelte';
 	import type { MenuItem } from './types';
 
