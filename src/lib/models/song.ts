@@ -64,14 +64,22 @@ class Row {
 	}
 }
 
+class PatternRow {
+	envelopeValue: number;
+	noiseValue: number;
+
+	constructor() {
+		this.envelopeValue = 0;
+		this.noiseValue = 0;
+	}
+}
+
 class Channel {
 	rows: Row[];
 	label: ChannelLabel;
 
 	constructor(rowCount: number = 64, label: ChannelLabel) {
-		this.rows = Array(rowCount)
-			.fill(0)
-			.map(() => new Row());
+		this.rows = Array.from({ length: rowCount }, () => new Row());
 		this.label = label;
 	}
 }
@@ -80,6 +88,7 @@ class Pattern {
 	id: number;
 	length: number;
 	channels: [Channel, Channel, Channel];
+	patternRows: PatternRow[];
 
 	constructor(id: number, length: number = 64) {
 		this.id = id;
@@ -89,6 +98,7 @@ class Pattern {
 			new Channel(length, 'B'),
 			new Channel(length, 'C')
 		];
+		this.patternRows = Array.from({ length }, () => new PatternRow());
 	}
 }
 
