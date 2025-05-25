@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { Song } from './lib/models/song';
+	import { generateTestSong, Song } from './lib/models/song';
 	import MenuBar from './lib/components/Menu/MenuBar.svelte';
 	import './app.css';
 	import { menuItems } from './lib/config/app-menu';
+	import SongEditor from './lib/components/Song/SongEditor.svelte';
 
-	let song = $state(new Song());
+	let song = $state(generateTestSong());
 </script>
 
 <main class="flex h-screen flex-col bg-neutral-800 font-sans text-xs text-neutral-100">
 	<MenuBar {menuItems} />
-	<div class="p-3">
+	<div class="flex flex-col gap-3 p-3">
 		<div class="ml-0 max-w-fit rounded bg-neutral-700 p-3 shadow-md">
 			<div class="flex items-center gap-3">
 				<div class="flex items-center gap-1">
@@ -27,6 +28,9 @@
 						class="w-70 rounded border border-neutral-600 bg-neutral-900 px-2 py-1 focus:border-transparent focus:ring-1 focus:ring-blue-500 focus:outline-none" />
 				</div>
 			</div>
+		</div>
+		<div class="mx-auto">
+			<SongEditor bind:patterns={song.patterns} />
 		</div>
 	</div>
 </main>
