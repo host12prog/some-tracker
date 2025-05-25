@@ -15,6 +15,7 @@
 	--pattern-noise: theme('colors.teal.600');
 	--pattern-header: theme('colors.zinc.800');
 	--pattern-selected: theme('colors.zinc.700');
+	--pattern-cell-selected: theme('colors.zinc.400');
 	--pattern-row-num: theme('colors.teal.500');
 	--pattern-alternate: theme('colors.zinc.900');
 }

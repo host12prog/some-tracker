@@ -17,6 +17,8 @@
 		patternOrder: number[];
 	} = $props();
 
+	let selectedColumn = $state(0);
+
 	const FONT_SIZE = 14;
 
 	function getColors() {
@@ -32,6 +34,7 @@
 			noise: style.getPropertyValue('--pattern-noise').trim(),
 			header: style.getPropertyValue('--pattern-header').trim(),
 			selected: style.getPropertyValue('--pattern-selected').trim(),
+			cellSelected: style.getPropertyValue('--pattern-cell-selected').trim(),
 			rowNum: style.getPropertyValue('--pattern-row-num').trim(),
 			alternate: style.getPropertyValue('--pattern-alternate').trim()
 		};
@@ -44,6 +47,87 @@
 	let lineHeight = FONT_SIZE * 1.8;
 
 	let currentPattern = $derived(patterns[patternOrder[currentPatternOrderIndex]]);
+
+	function getCellPositions(
+		rowData: string
+	): { x: number; width: number; char: string; partIndex: number; charIndex: number }[] {
+		const parts = rowData.split(' ');
+		const positions: {
+			x: number;
+			width: number;
+			char: string;
+			partIndex: number;
+			charIndex: number;
+		}[] = [];
+		let x = 10;
+
+		for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+			const part = parts[partIndex];
+			if (!part) continue;
+
+			// Skip row number (partIndex 0) - it's not selectable
+			if (partIndex === 0) {
+				x += ctx.measureText(part).width;
+				if (partIndex < parts.length - 1) {
+					x += ctx.measureText(' ').width;
+				}
+				continue;
+			}
+
+			// Check if this is a note column (partIndex 4, 7, 10 for channels 1, 2, 3)
+			const isNoteColumn = partIndex >= 4 && (partIndex - 4) % 3 === 0;
+
+			if (isNoteColumn) {
+				// Treat entire note as a single cell
+				const width = ctx.measureText(part).width;
+				positions.push({ x, width, char: part, partIndex, charIndex: 0 });
+				x += width;
+			} else {
+				// Add each character as a separate cell
+				for (let charIndex = 0; charIndex < part.length; charIndex++) {
+					const char = part[charIndex];
+					const width = ctx.measureText(char).width;
+					positions.push({ x, width, char, partIndex, charIndex });
+					x += width;
+				}
+			}
+
+			// Add space after part (except for the last part)
+			if (partIndex < parts.length - 1) {
+				x += ctx.measureText(' ').width;
+			}
+		}
+
+		return positions;
+	}
+
+	function getTotalCellCount(rowData: string): number {
+		const parts = rowData.split(' ');
+		let count = 0;
+
+		for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+			const part = parts[partIndex];
+			if (!part) continue;
+
+			// Skip row number (partIndex 0) - it's not selectable
+			if (partIndex === 0) {
+				continue;
+			}
+
+			// Check if this is a note column (partIndex 4, 7, 10 for channels 1, 2, 3)
+			const isNoteColumn = partIndex >= 4 && (partIndex - 4) % 3 === 0;
+
+			if (isNoteColumn) {
+				// Note column counts as 1 cell
+				count += 1;
+			} else {
+				// Other columns: each character is a cell
+				count += part.length;
+			}
+		}
+
+		return count;
+	}
 
 	function formatNote(noteName: NoteName, octave: number): string {
 		const notes = [
@@ -214,6 +298,15 @@
 			ctx.fillRect(0, y, canvasWidth, lineHeight);
 		}
 
+		const cellPositions = getCellPositions(rowData);
+
+		// Draw cell cursor if this is the selected row
+		if (isSelected && selectedColumn < cellPositions.length) {
+			const cellPos = cellPositions[selectedColumn];
+			ctx.fillStyle = COLORS.cellSelected;
+			ctx.fillRect(cellPos.x - 1, y, cellPos.width + 2, lineHeight);
+		}
+
 		const parts = rowData.split(' ');
 		let x = 10;
 
@@ -304,6 +397,27 @@
 			currentPatternOrderIndex++;
 			selectedRow = 0;
 		}
+
+		// Ensure selectedColumn is within bounds for the new row
+		if (currentPattern) {
+			const rowData = getRowData(currentPattern, selectedRow);
+			const maxCells = getTotalCellCount(rowData);
+			if (selectedColumn >= maxCells) {
+				selectedColumn = Math.max(0, maxCells - 1);
+			}
+		}
+	}
+
+	function moveColumn(delta: number) {
+		if (!currentPattern) return;
+
+		const rowData = getRowData(currentPattern, selectedRow);
+		const maxCells = getTotalCellCount(rowData);
+		const newColumn = selectedColumn + delta;
+
+		if (newColumn >= 0 && newColumn < maxCells) {
+			selectedColumn = newColumn;
+		}
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -316,6 +430,14 @@
 				event.preventDefault();
 				moveRow(1);
 				break;
+			case 'ArrowLeft':
+				event.preventDefault();
+				moveColumn(-1);
+				break;
+			case 'ArrowRight':
+				event.preventDefault();
+				moveColumn(1);
+				break;
 			case 'PageUp':
 				event.preventDefault();
 				moveRow(-16);
@@ -326,11 +448,21 @@
 				break;
 			case 'Home':
 				event.preventDefault();
-				selectedRow = 0;
+				if (event.ctrlKey) {
+					selectedRow = 0;
+				} else {
+					selectedColumn = 0;
+				}
 				break;
 			case 'End':
 				event.preventDefault();
-				selectedRow = currentPattern.length - 1;
+				if (event.ctrlKey) {
+					selectedRow = currentPattern.length - 1;
+				} else {
+					const rowData = getRowData(currentPattern, selectedRow);
+					const maxCells = getTotalCellCount(rowData);
+					selectedColumn = Math.max(0, maxCells - 1);
+				}
 				break;
 		}
 	}
