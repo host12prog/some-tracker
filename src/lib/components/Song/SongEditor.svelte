@@ -3,11 +3,15 @@
 	import PatternEditor from './PatternEditor.svelte';
 	import PatternOrder from './PatternOrder.svelte';
 
-	let currentPatternIndex = $state(0);
-	let { patterns = $bindable() }: { patterns: Pattern[] } = $props();
+	let currentPatternOrderIndex = $state(0);
+	let selectedRow = $state(0);
+	let {
+		patterns = $bindable(),
+		patternOrder = $bindable()
+	}: { patterns: Pattern[]; patternOrder: number[] } = $props();
 </script>
 
 <div>
-	<PatternOrder bind:currentPatternIndex bind:patterns />
-	<PatternEditor bind:currentPatternIndex bind:patterns />
+	<PatternOrder bind:currentPatternOrderIndex bind:patterns bind:selectedRow bind:patternOrder />
+	<PatternEditor bind:currentPatternOrderIndex bind:patterns bind:selectedRow bind:patternOrder />
 </div>

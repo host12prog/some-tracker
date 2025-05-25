@@ -30,7 +30,7 @@
 			</div>
 		</div>
 		<div class="mx-auto">
-			<SongEditor bind:patterns={song.patterns} />
+			<SongEditor bind:patterns={song.patterns} bind:patternOrder={song.patternOrder} />
 		</div>
 	</div>
 </main>
