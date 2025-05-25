@@ -24,8 +24,8 @@
 	{#each patternOrder as patternIndex, i (i)}
 		<button
 			class="h-7 w-7 flex-shrink-0 {i === currentPatternOrderIndex
-				? 'cursor-default rounded-sm border border-blue-400 bg-blue-600 text-slate-200'
-				: 'cursor-pointer rounded-sm border border-slate-400 bg-slate-500 text-slate-900 hover:bg-slate-400'}"
+				? 'cursor-default rounded-sm border border-[var(--pattern-header)] bg-[var(--pattern-selected)] text-[var(--pattern-text)]'
+				: 'cursor-pointer rounded-sm border border-[var(--pattern-empty)] bg-[var(--pattern-bg)] text-[var(--pattern-text)] hover:bg-[var(--pattern-alternate)]'}"
 			onclick={() => switchPattern(i)}>
 			{patterns[patternIndex].id}
 		</button>

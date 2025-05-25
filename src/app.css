@@ -4,4 +4,17 @@
 @theme {
 	--font-sans: 'Fira Code', sans-serif;
 	--font-mono: 'Fira Code', monospace;
+
+	--pattern-bg: theme('colors.zinc.950');
+	--pattern-text: theme('colors.zinc.100');
+	--pattern-empty: theme('colors.zinc.500');
+	--pattern-note: theme('colors.teal.400');
+	--pattern-instrument: theme('colors.teal.500');
+	--pattern-effect: theme('colors.teal.300');
+	--pattern-envelope: theme('colors.teal.200');
+	--pattern-noise: theme('colors.teal.600');
+	--pattern-header: theme('colors.zinc.800');
+	--pattern-selected: theme('colors.zinc.700');
+	--pattern-row-num: theme('colors.teal.500');
+	--pattern-alternate: theme('colors.zinc.900');
 }
