@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Effect, Pattern } from '../../models/song';
 	import { NoteName } from '../../models/song';
+	import Timeline from './Timeline.svelte';
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
@@ -497,14 +498,28 @@
 		};
 
 		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
 	});
 </script>
 
-<canvas
-	bind:this={canvas}
-	tabindex="0"
-	onkeydown={handleKeyDown}
-	onwheel={handleWheel}
-	class="block rounded-md border-[var(--pattern-empty)] focus:ring-1 focus:ring-[var(--pattern-header)]/50 focus:outline-none">
-</canvas>
+<div class="flex">
+	<canvas
+		bind:this={canvas}
+		tabindex="0"
+		onkeydown={handleKeyDown}
+		onwheel={handleWheel}
+		class="block rounded-l-md border-[var(--pattern-empty)] focus:ring-1 focus:ring-[var(--pattern-header)]/50 focus:outline-none">
+	</canvas>
+
+	<Timeline
+		{patterns}
+		{patternOrder}
+		bind:currentPatternOrderIndex
+		bind:selectedRow
+		{canvasHeight}
+		{lineHeight}
+		colors={COLORS} />
+</div>
