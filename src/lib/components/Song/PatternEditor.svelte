@@ -483,18 +483,15 @@
 	}
 
 	$effect(() => {
-		updateSize();
 		if (canvas) {
 			setupCanvas();
 			draw();
 		}
+	});
 
+	$effect(() => {
 		const handleResize = () => {
 			updateSize();
-			if (canvas) {
-				setupCanvas();
-				draw();
-			}
 		};
 
 		window.addEventListener('resize', handleResize);
