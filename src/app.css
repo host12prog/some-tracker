@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import 'tailwindcss';
 
 @theme {
-	--font-sans: 'Fira Code', sans-serif;
-	--font-mono: 'Fira Code', monospace;
+	--font-sans: 'JetBrains Mono', sans-serif;
+	--font-mono: 'JetBrains Mono', monospace;
 
 	--pattern-bg: theme('colors.zinc.950');
 	--pattern-text: theme('colors.zinc.100');

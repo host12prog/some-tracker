@@ -54,6 +54,7 @@
 				label={item.label}
 				icon={item.icon || ''}
 				type={item.type || 'normal'}
+				action={item.action}
 				items={item.items || []}
 				onAction={handleAction}
 				onMenuOpen={handleMenuOpen}

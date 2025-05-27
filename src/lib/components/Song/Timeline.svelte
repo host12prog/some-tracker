@@ -1,9 +1,14 @@
 <script lang="ts">
 	import type { Pattern } from '../../models/song';
 	import { NoteName } from '../../models/song';
+	import { getColors } from '../../utils/colors';
+	import { getFonts } from '../../utils/fonts';
 
 	let timelineCanvas: HTMLCanvasElement;
 	let timelineCtx: CanvasRenderingContext2D;
+
+	let COLORS = getColors();
+	let FONTS = getFonts();
 
 	let {
 		patterns,
@@ -11,8 +16,7 @@
 		currentPatternOrderIndex = $bindable(),
 		selectedRow = $bindable(),
 		canvasHeight,
-		lineHeight,
-		colors
+		lineHeight
 	}: {
 		patterns: Pattern[];
 		patternOrder: number[];
@@ -20,7 +24,6 @@
 		selectedRow: number;
 		canvasHeight: number;
 		lineHeight: number;
-		colors: any;
 	} = $props();
 
 	let isDraggingTimeline = $state(false);
@@ -45,7 +48,7 @@
 		timelineCanvas.style.height = canvasHeight + 'px';
 
 		timelineCtx.scale(dpr, dpr);
-		timelineCtx.font = `10px monospace`;
+		timelineCtx.font = `10px ${FONTS.mono}`;
 		timelineCtx.textBaseline = 'middle';
 		timelineCtx.textAlign = 'center';
 	}
@@ -96,7 +99,7 @@
 	function drawTimeline() {
 		if (!timelineCtx || !patterns || !patternOrder) return;
 
-		timelineCtx.fillStyle = colors.bg;
+		timelineCtx.fillStyle = COLORS.patternBg;
 		timelineCtx.fillRect(0, 0, TIMELINE_WIDTH, canvasHeight);
 
 		let totalTrackRows = 0;
@@ -140,17 +143,17 @@
 			const height = Math.max(16, segment.height);
 
 			if (segment.isActive) {
-				timelineCtx.fillStyle = colors.selected;
+				timelineCtx.fillStyle = COLORS.patternSelected;
 			} else {
-				timelineCtx.fillStyle = colors.alternate;
+				timelineCtx.fillStyle = COLORS.patternAlternate;
 			}
 			timelineCtx.fillRect(x, y, width, height);
 
-			timelineCtx.strokeStyle = colors.text;
+			timelineCtx.strokeStyle = COLORS.patternText;
 			timelineCtx.lineWidth = 1;
 			timelineCtx.strokeRect(x, y, width, height);
 
-			timelineCtx.fillStyle = colors.text;
+			timelineCtx.fillStyle = COLORS.patternText;
 			const labelY = y + 8;
 			const patternLabel = segment.patternIndex.toString(16).toUpperCase().padStart(2, '0');
 			timelineCtx.fillText(patternLabel, width / 2, labelY);
@@ -173,36 +176,36 @@
 					let xOffset = 2;
 
 					if (content.contentTypes.envelope) {
-						timelineCtx.fillStyle = colors.envelope;
+						timelineCtx.fillStyle = COLORS.patternEnvelope;
 						timelineCtx.fillRect(x + xOffset, rowY, envelopeWidth, rowHeight);
 					}
 					xOffset += envelopeWidth + 1;
 
 					if (content.contentTypes.noise) {
-						timelineCtx.fillStyle = colors.noise;
+						timelineCtx.fillStyle = COLORS.patternNoise;
 						timelineCtx.fillRect(x + xOffset, rowY, noiseWidth, rowHeight);
 					}
 					xOffset += noiseWidth + 1;
 
 					if (content.contentTypes.channels[0]) {
-						timelineCtx.fillStyle = colors.note;
+						timelineCtx.fillStyle = COLORS.patternNote;
 						timelineCtx.fillRect(x + xOffset, rowY, channelWidth, rowHeight);
 					}
 					xOffset += channelWidth + 1;
 
 					if (content.contentTypes.channels[1]) {
-						timelineCtx.fillStyle = colors.note;
+						timelineCtx.fillStyle = COLORS.patternNote;
 						timelineCtx.fillRect(x + xOffset, rowY, channelWidth, rowHeight);
 					}
 					xOffset += channelWidth + 1;
 
 					if (content.contentTypes.channels[2]) {
-						timelineCtx.fillStyle = colors.note;
+						timelineCtx.fillStyle = COLORS.patternNote;
 						timelineCtx.fillRect(x + xOffset, rowY, channelWidth, rowHeight);
 					}
 				}
 
-				timelineCtx.strokeStyle = colors.rowNum;
+				timelineCtx.strokeStyle = COLORS.patternRowNum;
 				timelineCtx.lineWidth = 0.5;
 				timelineCtx.globalAlpha = 0.3;
 

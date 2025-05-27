@@ -7,6 +7,7 @@
 		label,
 		icon = '',
 		type = 'normal',
+		action,
 		items,
 		onAction,
 		onMenuOpen,
@@ -15,6 +16,7 @@
 		label: string;
 		icon: string;
 		type: 'normal' | 'expandable';
+		action?: string;
 		items: MenuItem[];
 		onAction: (data: { action: string }) => void;
 		onMenuOpen: (data: { label: string }) => void;
@@ -40,7 +42,7 @@
 		event.stopPropagation();
 
 		if (type === 'normal') {
-			onAction?.({ action: label });
+			onAction?.({ action: action || label });
 			onMenuClose?.({ all: true });
 		} else if (type === 'expandable') {
 			if (menuPanelContext) {
@@ -56,7 +58,7 @@
 			event.preventDefault();
 
 			if (type === 'normal') {
-				onAction?.({ action: label });
+				onAction?.({ action: action || label });
 				onMenuClose?.({ all: true });
 			} else if (type === 'expandable') {
 				if (menuPanelContext) {

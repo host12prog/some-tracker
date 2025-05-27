@@ -3,7 +3,13 @@
 	import type { MenuItem } from './types';
 
 	let activeMenu = $state('');
-	let { menuItems = [] }: { menuItems: MenuItem[] } = $props();
+	let {
+		menuItems = [],
+		onAction
+	}: {
+		menuItems: MenuItem[];
+		onAction?: (data: { action: string }) => void;
+	} = $props();
 
 	function handleMenuOpen(data: { label: string }) {
 		activeMenu = data.label;
@@ -16,6 +22,10 @@
 			activeMenu = '';
 		}
 	}
+
+	function handleAction(data: { action: string }) {
+		onAction?.(data);
+	}
 </script>
 
 <div class="flex w-full items-center border-b border-neutral-600 bg-neutral-700 px-2 text-center">
@@ -24,6 +34,7 @@
 			label={item.label}
 			items={item.items || []}
 			{activeMenu}
+			onAction={handleAction}
 			onMenuOpen={handleMenuOpen}
 			onMenuClose={handleMenuClose} />
 	{/each}

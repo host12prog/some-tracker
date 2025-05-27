@@ -1,51 +1,34 @@
 <script lang="ts">
 	import type { Effect, Pattern } from '../../models/song';
 	import { NoteName } from '../../models/song';
+	import { getColors } from '../../utils/colors';
+	import { getFonts } from '../../utils/fonts';
+	import PatternOrder from './PatternOrder.svelte';
 	import Timeline from './Timeline.svelte';
+
+	let {
+		patterns = $bindable(),
+		patternOrder = $bindable()
+	}: {
+		patterns: Pattern[];
+		patternOrder: number[];
+	} = $props();
+
+	const FONT_SIZE = 14;
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 
-	let {
-		currentPatternOrderIndex = $bindable(),
-		patterns = $bindable(),
-		selectedRow = $bindable(),
-		patternOrder = $bindable()
-	}: {
-		currentPatternOrderIndex: number;
-		patterns: Pattern[];
-		selectedRow: number;
-		patternOrder: number[];
-	} = $props();
-
-	let selectedColumn = $state(0);
-
-	const FONT_SIZE = 14;
-
-	function getColors() {
-		const style = getComputedStyle(document.documentElement);
-		return {
-			bg: style.getPropertyValue('--pattern-bg').trim(),
-			text: style.getPropertyValue('--pattern-text').trim(),
-			empty: style.getPropertyValue('--pattern-empty').trim(),
-			note: style.getPropertyValue('--pattern-note').trim(),
-			instrument: style.getPropertyValue('--pattern-instrument').trim(),
-			effect: style.getPropertyValue('--pattern-effect').trim(),
-			envelope: style.getPropertyValue('--pattern-envelope').trim(),
-			noise: style.getPropertyValue('--pattern-noise').trim(),
-			header: style.getPropertyValue('--pattern-header').trim(),
-			selected: style.getPropertyValue('--pattern-selected').trim(),
-			cellSelected: style.getPropertyValue('--pattern-cell-selected').trim(),
-			rowNum: style.getPropertyValue('--pattern-row-num').trim(),
-			alternate: style.getPropertyValue('--pattern-alternate').trim()
-		};
-	}
-
 	let COLORS = getColors();
+	let FONTS = getFonts();
 
 	let canvasWidth = $state(800);
 	let canvasHeight = $state(600);
 	let lineHeight = FONT_SIZE * 1.8;
+
+	let selectedColumn = $state(0);
+	let currentPatternOrderIndex = $state(0);
+	let selectedRow = $state(0);
 
 	let currentPattern = $derived(patterns[patternOrder[currentPatternOrderIndex]]);
 
@@ -93,7 +76,6 @@
 				}
 			}
 
-			// Add space after part (except for the last part)
 			if (partIndex < parts.length - 1) {
 				x += ctx.measureText(' ').width;
 			}
@@ -284,27 +266,26 @@
 		canvas.style.height = canvasHeight + 'px';
 
 		ctx.scale(dpr, dpr);
-		ctx.font = `${FONT_SIZE}px monospace`;
+		ctx.font = `${FONT_SIZE}px ${FONTS.mono}`;
 		ctx.textBaseline = 'middle';
 	}
 
 	function drawRow(rowData: string, y: number, isSelected: boolean, rowIndex: number) {
 		if (rowIndex % 8 >= 4) {
-			ctx.fillStyle = COLORS.alternate;
+			ctx.fillStyle = COLORS.patternAlternate;
 			ctx.fillRect(0, y, canvasWidth, lineHeight);
 		}
 
 		if (isSelected) {
-			ctx.fillStyle = COLORS.selected;
+			ctx.fillStyle = COLORS.patternSelected;
 			ctx.fillRect(0, y, canvasWidth, lineHeight);
 		}
 
 		const cellPositions = getCellPositions(rowData);
 
-		// Draw cell cursor if this is the selected row
 		if (isSelected && selectedColumn < cellPositions.length) {
 			const cellPos = cellPositions[selectedColumn];
-			ctx.fillStyle = COLORS.cellSelected;
+			ctx.fillStyle = COLORS.patternCellSelected;
 			ctx.fillRect(cellPos.x - 1, y, cellPos.width + 2, lineHeight);
 		}
 
@@ -315,27 +296,27 @@
 			const part = parts[i];
 			if (!part) continue;
 
-			let baseColor = COLORS.text;
+			let baseColor = COLORS.patternText;
 			if (i === 0) {
-				baseColor = COLORS.rowNum;
+				baseColor = COLORS.patternRowNum;
 			} else if (i >= 4 && (i - 4) % 3 === 0) {
-				baseColor = COLORS.note;
+				baseColor = COLORS.patternNote;
 			} else if (i >= 4 && (i - 4) % 3 === 1) {
-				baseColor = COLORS.instrument;
+				baseColor = COLORS.patternInstrument;
 			} else if (i >= 4 && (i - 4) % 3 === 2) {
-				baseColor = COLORS.effect;
+				baseColor = COLORS.patternEffect;
 			} else if (i === 1) {
-				baseColor = COLORS.envelope;
+				baseColor = COLORS.patternEnvelope;
 			} else if (i === 2) {
-				baseColor = COLORS.effect;
+				baseColor = COLORS.patternEffect;
 			} else if (i === 3) {
-				baseColor = COLORS.noise;
+				baseColor = COLORS.patternNoise;
 			}
 
 			const isNote = i >= 4 && (i - 4) % 3 === 0;
 
 			if (isNote && part === '---') {
-				ctx.fillStyle = COLORS.empty;
+				ctx.fillStyle = COLORS.patternEmpty;
 				ctx.fillText(part, x, y + lineHeight / 2);
 				x += ctx.measureText(part).width;
 			} else if (isNote) {
@@ -345,7 +326,7 @@
 			} else {
 				for (let charIndex = 0; charIndex < part.length; charIndex++) {
 					const char = part[charIndex];
-					const color = char === '.' || char === '-' ? COLORS.empty : baseColor;
+					const color = char === '.' || char === '-' ? COLORS.patternEmpty : baseColor;
 
 					ctx.fillStyle = color;
 					ctx.fillText(char, x, y + lineHeight / 2);
@@ -360,7 +341,7 @@
 	function draw() {
 		if (!ctx || !currentPattern) return;
 
-		ctx.fillStyle = COLORS.bg;
+		ctx.fillStyle = COLORS.patternBg;
 		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
 		const visibleRows = getVisibleRows();
@@ -399,7 +380,6 @@
 			selectedRow = 0;
 		}
 
-		// Ensure selectedColumn is within bounds for the new row
 		if (currentPattern) {
 			const rowData = getRowData(currentPattern, selectedRow);
 			const maxCells = getTotalCellCount(rowData);
@@ -502,7 +482,15 @@
 	});
 </script>
 
-<div class="flex">
+<div class="flex" style="max-height: {canvasHeight}px">
+	<PatternOrder
+		bind:currentPatternOrderIndex
+		bind:patterns
+		bind:selectedRow
+		bind:patternOrder
+		{canvasHeight}
+		{lineHeight} />
+
 	<canvas
 		bind:this={canvas}
 		tabindex="0"
@@ -517,6 +505,5 @@
 		bind:currentPatternOrderIndex
 		bind:selectedRow
 		{canvasHeight}
-		{lineHeight}
-		colors={COLORS} />
+		{lineHeight} />
 </div>
