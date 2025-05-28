@@ -1,3 +1,5 @@
+import { PT3TuneTables } from './pt3/tuning-tables';
+
 enum NoteName {
 	None = 0,
 	Off,
@@ -107,14 +109,12 @@ class Pattern {
 }
 
 class Song {
-	loopPointId: number;
-	patterns: Pattern[];
-	patternOrder: number[];
+	public patterns: Pattern[];
+	public tuningTable: number[];
 
 	constructor() {
-		this.loopPointId = 0;
 		this.patterns = [new Pattern(0)];
-		this.patternOrder = [0];
+		this.tuningTable = PT3TuneTables[2]; // Default to most common table from VT2 nowadays
 	}
 
 	addPattern(): Pattern {

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Song } from './lib/models/song';
 	import MenuBar from './lib/components/Menu/MenuBar.svelte';
 	import './app.css';
 	import { menuItems } from './lib/config/app-menu';
@@ -8,7 +7,7 @@
 	import Button from './lib/components/Button/Button.svelte';
 	import PatternEditor from './lib/components/Song/PatternEditor.svelte';
 
-	let project = $state(new Project('New Project', 'Unknown', [new Song()]));
+	let project = $state(new Project());
 
 	async function handleMenuAction(data: { action: string }) {
 		try {
@@ -54,7 +53,7 @@
 			{#each project.songs as song}
 				<PatternEditor
 					bind:patterns={song.patterns}
-					bind:patternOrder={song.patternOrder} />
+					bind:patternOrder={project.patternOrder} />
 			{/each}
 		</div>
 	</div>

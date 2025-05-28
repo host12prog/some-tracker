@@ -6,8 +6,8 @@
 
 <button
 	{onclick}
-	class="rounded border border-neutral-600 bg-[var(--pattern-bg)] px-3 py-1
-		hover:bg-[var(--pattern-selected)]
-		focus:border-transparent focus:ring-1 focus:ring-[var(--pattern-note)] focus:outline-none">
+	class="cursor-pointer rounded border border-neutral-600 bg-[var(--pattern-bg)] px-3
+		py-1
+		hover:bg-[var(--pattern-selected)] focus:border-transparent focus:ring-1 focus:ring-[var(--pattern-note)] focus:outline-none">
 	{@render children()}
 </button>

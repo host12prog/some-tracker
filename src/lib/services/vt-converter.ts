@@ -1,5 +1,6 @@
 import { Project } from '../models/project';
-import { Song, Pattern, Channel, Row, Note, Effect, NoteName, EffectType } from '../models/song';
+import { Song, Pattern, Note, Effect, NoteName, EffectType } from '../models/song';
+import { PT3TuneTables } from '../models/pt3/tuning-tables';
 
 interface VT2Module {
 	title: string;
@@ -8,6 +9,7 @@ interface VT2Module {
 	speed: number;
 	playOrder: number[];
 	loopPoint?: number;
+	noteTable: number;
 }
 
 interface VT2Ornament {
@@ -92,14 +94,16 @@ class VT2Converter {
 		const patterns = this.parsePatterns(lines);
 
 		const song = new Song();
+
+		if (module.noteTable >= 0 && module.noteTable < PT3TuneTables.length) {
+			song.tuningTable = PT3TuneTables[module.noteTable];
+		}
+
 		song.patterns = patterns.map((vt2Pattern) => {
 			const pattern = new Pattern(vt2Pattern.id, vt2Pattern.rows.length);
 			this.convertPattern(vt2Pattern, pattern);
 			return pattern;
 		});
-
-		song.patternOrder = module.playOrder;
-		song.loopPointId = module.loopPoint || 0;
 
 		// Detect chip type from title or author
 		const titleLower = module.title.toLowerCase();
@@ -112,7 +116,16 @@ class VT2Converter {
 			chipType = 'AY';
 		}
 
-		return new Project(module.title, module.author, [song], chipType);
+		const project = new Project(
+			module.title,
+			module.author,
+			[song],
+			module.loopPoint || 0,
+			module.playOrder,
+			chipType
+		);
+
+		return project;
 	}
 
 	private parseModule(lines: string[]): VT2Module {
@@ -122,7 +135,8 @@ class VT2Converter {
 			version: '',
 			speed: 3,
 			playOrder: [],
-			loopPoint: 0
+			loopPoint: 0,
+			noteTable: 0
 		};
 
 		const moduleLines = this.extractSection(lines, '[Module]');
@@ -146,6 +160,9 @@ class VT2Converter {
 					break;
 				case 'PlayOrder':
 					module.playOrder = this.parsePlayOrder(value);
+					break;
+				case 'NoteTable':
+					module.noteTable = parseInt(value) || 0;
 					break;
 			}
 		}
@@ -482,3 +499,34 @@ export function convertVT2String(content: string): Project {
 }
 
 export { VT2Converter };
+
+/**
+ * Calculates PT3.5+ volume value using the mathematical formula
+ * instead of a lookup table
+ */
+function calculatePT3Volume(instrumentVolume: number, patternVolume: number): number {
+	// Ensure inputs are within valid range (0-15)
+	instrumentVolume = Math.max(0, Math.min(15, instrumentVolume));
+	patternVolume = Math.max(0, Math.min(15, patternVolume));
+
+	// Formula: (instrument_volume * pattern_volume + 7) / 15
+	// The +7 provides proper rounding for integer division
+	return Math.floor((instrumentVolume * patternVolume + 7) / 15);
+}
+
+/**
+ * Calculates volume using logarithmic approach, which is more appropriate
+ * for the AY/YM's logarithmic DAC characteristics.
+ * As noted by audio engineers: "PT3 authors forgot that as AY/YM DAC is roughly
+ * logarithmic a simple subtraction (with clipping to 0) is enough"
+ */
+function calculateLogarithmicVolume(instrumentVolume: number, patternVolume: number): number {
+	// Ensure inputs are within valid range (0-15)
+	instrumentVolume = Math.max(0, Math.min(15, instrumentVolume));
+	patternVolume = Math.max(0, Math.min(15, patternVolume));
+
+	// In logarithmic domain: attenuation = subtraction
+	// Pattern volume 15 = no attenuation, 0 = full attenuation
+	const attenuation = 15 - patternVolume;
+	return Math.max(0, instrumentVolume - attenuation);
+}
