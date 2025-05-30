@@ -499,34 +499,3 @@ export function convertVT2String(content: string): Project {
 }
 
 export { VT2Converter };
-
-/**
- * Calculates PT3.5+ volume value using the mathematical formula
- * instead of a lookup table
- */
-function calculatePT3Volume(instrumentVolume: number, patternVolume: number): number {
-	// Ensure inputs are within valid range (0-15)
-	instrumentVolume = Math.max(0, Math.min(15, instrumentVolume));
-	patternVolume = Math.max(0, Math.min(15, patternVolume));
-
-	// Formula: (instrument_volume * pattern_volume + 7) / 15
-	// The +7 provides proper rounding for integer division
-	return Math.floor((instrumentVolume * patternVolume + 7) / 15);
-}
-
-/**
- * Calculates volume using logarithmic approach, which is more appropriate
- * for the AY/YM's logarithmic DAC characteristics.
- * As noted by audio engineers: "PT3 authors forgot that as AY/YM DAC is roughly
- * logarithmic a simple subtraction (with clipping to 0) is enough"
- */
-function calculateLogarithmicVolume(instrumentVolume: number, patternVolume: number): number {
-	// Ensure inputs are within valid range (0-15)
-	instrumentVolume = Math.max(0, Math.min(15, instrumentVolume));
-	patternVolume = Math.max(0, Math.min(15, patternVolume));
-
-	// In logarithmic domain: attenuation = subtraction
-	// Pattern volume 15 = no attenuation, 0 = full attenuation
-	const attenuation = 15 - patternVolume;
-	return Math.max(0, instrumentVolume - attenuation);
-}
