@@ -22,7 +22,8 @@ enum EffectType {
 	Vibrato = 1,
 	Portamento = 2,
 	Glissando = 3,
-	EnvelopeSlide = 4
+	EnvelopeSlide = 4,
+	Speed = 5
 	// etc...
 }
 
@@ -111,8 +112,10 @@ class Pattern {
 class Song {
 	public patterns: Pattern[];
 	public tuningTable: number[];
+	public initialSpeed: number;
 
 	constructor() {
+		this.initialSpeed = 3;
 		this.patterns = [new Pattern(0)];
 		this.tuningTable = PT3TuneTables[2]; // Default to most common table from VT2 nowadays
 	}

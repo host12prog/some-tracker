@@ -6,6 +6,12 @@
 	import { Project } from './lib/models/project';
 	import Button from './lib/components/Button/Button.svelte';
 	import PatternEditor from './lib/components/Song/PatternEditor.svelte';
+	import { setContext } from 'svelte';
+
+	let audio: { context: AudioContext | null; node: AudioWorkletNode | null } = $state({
+		context: null,
+		node: null
+	});
 
 	let project = $state(new Project());
 	let patternEditor: PatternEditor | null = $state(null);
@@ -22,10 +28,40 @@
 		}
 	}
 
+	async function initAudio() {
+		if (!audio.context) {
+			audio.context = new AudioContext();
+
+			const wasmUrl = import.meta.env.BASE_URL + 'ayumi.wasm';
+			const response = await fetch(wasmUrl);
+			const wasmBuffer = await response.arrayBuffer();
+
+			const processorUrl = import.meta.env.BASE_URL + 'ayumi-processor.js';
+			await audio.context.audioWorklet.addModule(processorUrl);
+
+			audio.node = new AudioWorkletNode(audio.context, 'ayumi-processor', {
+				outputChannelCount: [2]
+			});
+
+			audio.node.port.postMessage({
+				type: 'init',
+				wasmBuffer
+			});
+
+			audio.node.connect(audio.context.destination);
+		}
+	}
+
 	async function changeAymChipType() {
 		project.aymChipType = project.aymChipType === 'AY' ? 'YM' : 'AY';
 		project = { ...project };
 	}
+
+	$effect(() => {
+		initAudio();
+	});
+
+	setContext('audio', audio);
 </script>
 
 <main
@@ -56,7 +92,8 @@
 				<PatternEditor
 					bind:this={patternEditor}
 					bind:patterns={song.patterns}
-					bind:patternOrder={project.patternOrder} />
+					bind:patternOrder={project.patternOrder}
+					{song} />
 			{/each}
 		</div>
 	</div>

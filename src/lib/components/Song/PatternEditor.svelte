@@ -1,18 +1,25 @@
 <script lang="ts">
 	import type { Effect, Pattern } from '../../models/song';
 	import { NoteName } from '../../models/song';
+	import type { Song } from '../../models/song';
 	import { getColors } from '../../utils/colors';
 	import { getFonts } from '../../utils/fonts';
 	import PatternOrder from './PatternOrder.svelte';
 	import Timeline from './Timeline.svelte';
+	import { getContext } from 'svelte';
 
 	let {
 		patterns = $bindable(),
-		patternOrder = $bindable()
+		patternOrder = $bindable(),
+		song
 	}: {
 		patterns: Pattern[];
 		patternOrder: number[];
+		song?: Song;
 	} = $props();
+
+	const audio: { context: AudioContext | null; node: AudioWorkletNode | null } =
+		getContext('audio');
 
 	const FONT_SIZE = 14;
 
@@ -32,9 +39,57 @@
 
 	let currentPattern = $derived(patterns[patternOrder[currentPatternOrderIndex]]);
 
+	let isPlaying = $state(false);
+
 	export function onSongChange() {
 		selectedRow = 0;
 		currentPatternOrderIndex = 0;
+	}
+
+	let messageHandler: ((event: MessageEvent) => void) | null = null;
+
+	async function togglePlayback() {
+		if (!audio.context || !audio.node) return;
+
+		if (isPlaying) {
+			audio.node.port.postMessage({
+				type: 'stop'
+			});
+			if (audio.context.state !== 'suspended') {
+				await audio.context.suspend();
+			}
+			isPlaying = false;
+		} else {
+			if (audio.context.state === 'suspended') {
+				await audio.context.resume();
+			}
+
+			if (song?.tuningTable) {
+				audio.node.port.postMessage({
+					type: 'set_tuning_table',
+					tuningTable: song.tuningTable
+				});
+			}
+
+			audio.node.port.postMessage({
+				type: 'set_pattern_order',
+				patternOrderData: patternOrder
+			});
+
+			if (currentPattern) {
+				audio.node.port.postMessage({
+					type: 'set_pattern_data',
+					pattern: currentPattern
+				});
+			}
+
+			audio.node.port.postMessage({
+				type: 'play',
+				initialSpeed: song?.initialSpeed || 3,
+				startPatternOrderIndex: currentPatternOrderIndex
+			});
+			isPlaying = true;
+		}
 	}
 
 	function getCellPositions(
@@ -408,6 +463,10 @@
 
 	function handleKeyDown(event: KeyboardEvent) {
 		switch (event.key) {
+			case ' ':
+				event.preventDefault();
+				togglePlayback();
+				break;
 			case 'ArrowUp':
 				event.preventDefault();
 				moveRow(-1);
@@ -485,30 +544,110 @@
 			window.removeEventListener('resize', handleResize);
 		};
 	});
+
+	$effect(() => {
+		if (audio.node && !messageHandler) {
+			console.log('Setting up message listener on audio node');
+			messageHandler = (event: MessageEvent) => {
+				console.log('Received message from audio processor:', event.data);
+				if (event.data.type === 'position_update') {
+					console.log('Position update:', event.data.currentRow, 'isPlaying:', isPlaying);
+					if (isPlaying) {
+						selectedRow = event.data.currentRow;
+						if (event.data.currentPatternOrderIndex !== undefined) {
+							currentPatternOrderIndex = event.data.currentPatternOrderIndex;
+						}
+					}
+				} else if (event.data.type === 'request_pattern') {
+					const requestedOrderIndex = event.data.patternOrderIndex;
+
+					if (requestedOrderIndex >= 0 && requestedOrderIndex < patternOrder.length) {
+						const patternIndex = patternOrder[requestedOrderIndex];
+						const requestedPattern = patterns[patternIndex];
+
+						if (requestedPattern && audio.node) {
+							console.log(
+								`Sending pattern ${patternIndex} for order ${requestedOrderIndex}`
+							);
+							audio.node.port.postMessage({
+								type: 'set_pattern_data',
+								pattern: requestedPattern
+							});
+						} else {
+							console.error(
+								`Pattern not found for order index ${requestedOrderIndex}, pattern index ${patternIndex}`
+							);
+						}
+					} else {
+						console.error(
+							`Invalid pattern order index: ${requestedOrderIndex}, pattern order length: ${patternOrder.length}`
+						);
+					}
+				}
+			};
+
+			audio.node.port.onmessage = messageHandler;
+			console.log('Message listener set up');
+		}
+	});
 </script>
 
-<div class="flex" style="max-height: {canvasHeight}px">
-	<PatternOrder
-		bind:currentPatternOrderIndex
-		bind:patterns
-		bind:selectedRow
-		bind:patternOrder
-		{canvasHeight}
-		{lineHeight} />
+<div class="flex flex-col gap-2">
+	<!-- Play/Pause Button -->
+	<div class="flex justify-center">
+		<button
+			onclick={togglePlayback}
+			class="rounded bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 focus:ring-2 focus:ring-blue-500/50 focus:outline-none disabled:opacity-50"
+			disabled={!audio.context || !audio.node}
+			title={isPlaying ? 'Pause' : 'Play'}>
+			{#if isPlaying}
+				<!-- Pause icon -->
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					xmlns="http://www.w3.org/2000/svg">
+					<path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+				</svg>
+			{:else}
+				<!-- Play icon -->
+				<svg
+					width="16"
+					height="16"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					xmlns="http://www.w3.org/2000/svg">
+					<path d="M8 5v14l11-7z" />
+				</svg>
+			{/if}
+		</button>
+	</div>
 
-	<canvas
-		bind:this={canvas}
-		tabindex="0"
-		onkeydown={handleKeyDown}
-		onwheel={handleWheel}
-		class="block rounded-l-md border-[var(--pattern-empty)] focus:ring-1 focus:ring-[var(--pattern-header)]/50 focus:outline-none">
-	</canvas>
+	<!-- Pattern Editor -->
+	<div class="flex" style="max-height: {canvasHeight}px">
+		<PatternOrder
+			bind:currentPatternOrderIndex
+			bind:patterns
+			bind:selectedRow
+			bind:patternOrder
+			{canvasHeight}
+			{lineHeight} />
 
-	<Timeline
-		{patterns}
-		{patternOrder}
-		bind:currentPatternOrderIndex
-		bind:selectedRow
-		{canvasHeight}
-		{lineHeight} />
+		<canvas
+			bind:this={canvas}
+			tabindex="0"
+			onkeydown={handleKeyDown}
+			onwheel={handleWheel}
+			class="block rounded-l-md border-[var(--pattern-empty)] focus:ring-1 focus:ring-[var(--pattern-header)]/50 focus:outline-none">
+		</canvas>
+
+		<Timeline
+			{patterns}
+			{patternOrder}
+			bind:currentPatternOrderIndex
+			bind:selectedRow
+			{canvasHeight}
+			{lineHeight} />
+	</div>
 </div>

@@ -67,19 +67,8 @@ class VT2Converter {
 	} as const;
 
 	private readonly effectTypeMap: Record<string, EffectType> = {
-		'1': EffectType.Glissando,
-		'2': EffectType.Portamento,
-		'3': EffectType.Portamento,
-		'4': EffectType.Vibrato,
-		'5': EffectType.EnvelopeSlide,
-		A: EffectType.Arpeggio,
-		B: EffectType.Arpeggio,
-		C: EffectType.Arpeggio,
-		V: EffectType.Vibrato,
-		E: EffectType.EnvelopeSlide,
-		P: EffectType.Portamento,
-		K: EffectType.Arpeggio,
-		S: EffectType.EnvelopeSlide
+		//fix later
+		B: EffectType.Speed
 	} as const;
 
 	/**
@@ -104,6 +93,8 @@ class VT2Converter {
 			this.convertPattern(vt2Pattern, pattern);
 			return pattern;
 		});
+
+		song.initialSpeed = module.speed;
 
 		// Detect chip type from title or author
 		const titleLower = module.title.toLowerCase();
