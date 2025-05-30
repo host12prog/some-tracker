@@ -8,12 +8,14 @@
 	import PatternEditor from './lib/components/Song/PatternEditor.svelte';
 
 	let project = $state(new Project());
+	let patternEditor: PatternEditor | null = $state(null);
 
 	async function handleMenuAction(data: { action: string }) {
 		try {
 			const importedProject = await handleFileImport(data.action);
 			if (importedProject) {
 				project = importedProject;
+				patternEditor?.onSongChange();
 			}
 		} catch (error) {
 			console.error('Failed to handle menu action:', error);
@@ -52,6 +54,7 @@
 		<div class="mx-auto">
 			{#each project.songs as song}
 				<PatternEditor
+					bind:this={patternEditor}
 					bind:patterns={song.patterns}
 					bind:patternOrder={project.patternOrder} />
 			{/each}

@@ -32,6 +32,11 @@
 
 	let currentPattern = $derived(patterns[patternOrder[currentPatternOrderIndex]]);
 
+	export function onSongChange() {
+		selectedRow = 0;
+		currentPatternOrderIndex = 0;
+	}
+
 	function getCellPositions(
 		rowData: string
 	): { x: number; width: number; char: string; partIndex: number; charIndex: number }[] {
