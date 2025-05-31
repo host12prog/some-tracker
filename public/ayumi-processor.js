@@ -12,7 +12,6 @@ let currentTuningTable = [];
 let patternOrder = [];
 let currentPatternOrderIndex = 0;
 
-let sampleRate = 44100;
 let songHz = 50;
 let samplesPerTick = 0;
 let sampleCounter = 0;
@@ -51,7 +50,7 @@ class AyumiProcessor extends AudioWorkletProcessor {
 
 				ayumiPtr = wasmModule.malloc(AYUMI_STRUCT_SIZE);
 
-				wasmModule.ayumi_configure(ayumiPtr, 0, 1773400, 44100);
+				wasmModule.ayumi_configure(ayumiPtr, 0, 1773400, sampleRate);
 				wasmModule.ayumi_set_pan(ayumiPtr, 0, 0.35, 0);
 				wasmModule.ayumi_set_pan(ayumiPtr, 1, 0.5, 0);
 				wasmModule.ayumi_set_pan(ayumiPtr, 2, 0.75, 0);
@@ -96,7 +95,6 @@ class AyumiProcessor extends AudioWorkletProcessor {
 			patternOrder = patternOrderData || [];
 		} else if (type === 'set_tuning_table') {
 			currentTuningTable = event.data.tuningTable || [];
-			console.log('Tuning table set:', currentTuningTable);
 		}
 	}
 
@@ -152,7 +150,7 @@ class AyumiProcessor extends AudioWorkletProcessor {
 		}
 	}
 
-	process(inputs, outputs, parameters) {
+	process(_inputs, outputs, _parameters) {
 		if (!this.initialized || !wasmModule || !ayumiPtr) {
 			return true;
 		}
@@ -169,7 +167,6 @@ class AyumiProcessor extends AudioWorkletProcessor {
 					currentPattern.length > 0 &&
 					sampleCounter >= samplesPerTick
 				) {
-					// start of new row
 					if (currentTick === 0) {
 						this.parsePatternRow(currentPattern, currentRow);
 
@@ -187,19 +184,12 @@ class AyumiProcessor extends AudioWorkletProcessor {
 						currentRow++;
 						if (currentRow >= currentPattern.length) {
 							currentRow = 0;
-							console.log(
-								`End of pattern reached. Current order: ${currentPatternOrderIndex}`
-							);
 
-							// Advance to next pattern in order
 							currentPatternOrderIndex++;
 							if (currentPatternOrderIndex >= patternOrder.length) {
-								// Loop back to beginning
 								currentPatternOrderIndex = 0;
 							}
 
-							// request the next pattern
-							console.log(`Requesting pattern for order ${currentPatternOrderIndex}`);
 							this.port.postMessage({
 								type: 'request_pattern',
 								patternOrderIndex: currentPatternOrderIndex
