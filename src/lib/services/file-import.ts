@@ -1,4 +1,5 @@
 import { loadVT2File } from './vt-converter';
+import { loadPT3File } from './pt-converter';
 import type { Project } from '../models/project';
 
 export class FileImportService {
@@ -45,10 +46,55 @@ export class FileImportService {
 		}
 	}
 
+	static async importPT3(): Promise<Project | null> {
+		try {
+			const input = document.createElement('input');
+			input.type = 'file';
+			input.accept = '.pt3';
+			input.style.display = 'none';
+
+			document.body.appendChild(input);
+
+			return new Promise((resolve, reject) => {
+				input.onchange = async (event) => {
+					const target = event.target as HTMLInputElement;
+					const file = target.files?.[0];
+
+					document.body.removeChild(input);
+
+					if (!file) {
+						resolve(null);
+						return;
+					}
+
+					try {
+						const project = await loadPT3File(file);
+						resolve(project);
+					} catch (error) {
+						console.error('Error loading PT3 file:', error);
+						reject(error);
+					}
+				};
+
+				input.oncancel = () => {
+					document.body.removeChild(input);
+					resolve(null);
+				};
+
+				input.click();
+			});
+		} catch (error) {
+			console.error('Error importing VT2 file:', error);
+			throw error;
+		}
+	}
+
 	static async handleMenuAction(action: string): Promise<Project | null> {
 		switch (action) {
 			case 'import-vt2':
 				return await this.importVT2();
+			case 'import-pt3':
+				return await this.importPT3();
 			default:
 				console.warn('Unknown import action:', action);
 				return null;
